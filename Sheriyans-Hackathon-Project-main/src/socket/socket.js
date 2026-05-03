@@ -9,7 +9,7 @@ import MessageModel from '../models/message.model.js';
 import OrganizationModel from '../models/organization.model.js';
 import DirectMessageModel from '../models/directMessage.model.js';
 import ChannelModel from '../models/channel.model.js';
-import aiService from '../models/ai.service.js';
+import aiService from '../services/ai.service.js';
 
 config();
 
