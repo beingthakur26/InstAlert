@@ -578,5 +578,3 @@ For questions, feedback, or support, please reach out to the InstaAlert team or 
 ---
 
 © 2026 InstaAlert. All Rights Reserved.
-#   I n s t A l e r t  
- 
