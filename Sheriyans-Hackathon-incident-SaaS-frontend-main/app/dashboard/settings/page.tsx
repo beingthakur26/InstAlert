@@ -86,7 +86,7 @@ export default function SettingsPage() {
       })
       const storedLogo = (organization as any).logo_url
       if (storedLogo) {
-        setLogoUrl(storedLogo.startsWith("http") ? storedLogo : `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}${storedLogo}`)
+        setLogoUrl(storedLogo.startsWith("http") ? storedLogo : `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://instalert-atbh.onrender.com"}${storedLogo}`)
       }
       const ns = (organization as any).notification_settings
       if (ns) {
@@ -139,7 +139,7 @@ export default function SettingsPage() {
 
       const fullUrl = res.data.logo_url.startsWith("http")
         ? res.data.logo_url
-        : `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"}${res.data.logo_url}`
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://instalert-atbh.onrender.com"}${res.data.logo_url}`
 
       setLogoUrl(fullUrl)
       await refreshUser()

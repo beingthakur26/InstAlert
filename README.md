@@ -488,8 +488,8 @@ npm install
 Create a `.env` file in the frontend root directory:
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
-NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
+NEXT_PUBLIC_API_BASE_URL=https://instalert-atbh.onrender.com
+NEXT_PUBLIC_SOCKET_URL=https://instalert-atbh.onrender.com
 ```
 
 Start the frontend development server:
