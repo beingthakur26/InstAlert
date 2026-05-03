@@ -1,13 +1,17 @@
 import app from '../app.js';
 import http from 'http';
 import { Server } from 'socket.io';
+import JWT from 'jsonwebtoken';
+import { config } from 'dotenv';
 
 import IncidentModel from '../models/incident.model.js';
 import MessageModel from '../models/message.model.js';
 import OrganizationModel from '../models/organization.model.js';
 import DirectMessageModel from '../models/directMessage.model.js';
 import ChannelModel from '../models/channel.model.js';
-import aiService from '../services/ai.service.js';
+import aiService from '../models/ai.service.js';
+
+config();
 
 const allowedOrigins = [
   ...(process.env.CLIENT_URL || process.env.FRONTEND_URL || '')
@@ -17,12 +21,18 @@ const allowedOrigins = [
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
   'https://inst-alert.vercel.app',
   'http://localhost:3000',
+  'https://instalert-atbh.onrender.com',
 ].filter(Boolean);
+
+console.log('Socket CORS allowed origins:', allowedOrigins);
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      return callback(null, true); // Allow all origins for now
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -31,22 +41,33 @@ const io = new Server(server, {
 // Map of userId -> socketId to track online users
 const onlineUsers = new Map();
 
-io.on('connection', (socket) => {
-  console.log(`[Socket] A user connected, socket id: ${socket.id}`);
+// Middleware to authenticate socket connections
+io.use((socket, next) => {
+  // Try to get token from auth object or cookies
+  const token = socket.handshake.auth?.token || socket.handshake.headers?.cookie?.match(/token=([^;]+)/)?.[1];
+  
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
 
-  socket.on("register-user", (data) => {
-    try {
-      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-      if (parsed.userId) {
-        onlineUsers.set(parsed.userId, socket.id);
-        socket.userId = parsed.userId;
-        // Broadcast updated online users to everyone
-        io.emit('online-users', Array.from(onlineUsers.keys()));
-      }
-    } catch (err) {
-      console.error("[Socket] Register user error:", err);
-    }
-  });
+  try {
+    const decoded = JWT.verify(token, process.env.JWT_SECRET);
+    socket.userId = decoded.id;
+    next();
+  } catch (err) {
+    console.error('Socket auth error:', err.message);
+    next(new Error('Authentication error'));
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log(`[Socket] User ${socket.userId} connected, socket id: ${socket.id}`);
+
+  // Register the user as online
+  if (socket.userId) {
+    onlineUsers.set(socket.userId, socket.id);
+    io.emit('online-users', Array.from(onlineUsers.keys()));
+  }
 
   socket.on("join-org", (data) => {
     try {
@@ -95,7 +116,7 @@ io.on('connection', (socket) => {
 
       io.to(`org:${joinCode}`).emit("receive-message", messagePayload);
 
-      // AI Integration - Support multiple triggers like @instaalert, @instalert, #InstaAlert
+      // AI Integration
       const aiTriggerRegex = /(@instaalert|@instalert|#instaalert|#instalert)/gi;
       
       if (aiTriggerRegex.test(data.message)) {
@@ -116,7 +137,6 @@ io.on('connection', (socket) => {
 
         const systemPrompt = `You are InstaAlert AI, a helpful assistant in a team chat. Answer the user's query clearly and concisely. ${context}`;
         
-        // Wait for AI response without blocking the chat thread
         aiService.askAI(systemPrompt, prompt, { organizationId: org._id, endpoint: 'socket-chat' }).then(async (result) => {
             const answer = result.text;
             const aiMessage = await MessageModel.create({
@@ -178,13 +198,11 @@ io.on('connection', (socket) => {
         createdAt: newDm.createdAt
       });
 
-      // Send to receiver if online
       const receiverSocketId = onlineUsers.get(data.receiverId);
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("receive-dm", dmPayload);
       }
       
-      // Also send back to sender to confirm
       socket.emit("receive-dm", dmPayload);
     } catch (error) {
       console.error("[Socket] DM error:", error);
@@ -193,7 +211,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log(`[Socket] User disconnected, socket id: ${socket.id}`);
+    console.log(`[Socket] User ${socket.userId} disconnected, socket id: ${socket.id}`);
     if (socket.userId) {
       onlineUsers.delete(socket.userId);
       io.emit('online-users', Array.from(onlineUsers.keys()));

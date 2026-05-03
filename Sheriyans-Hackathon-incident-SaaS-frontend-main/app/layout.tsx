@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: "InstaAlert — Smart Incident Response",
   description:
     "Automated incident detection, response, and resolution for modern engineering teams.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon.png",
+  },
 }
 
 import { AuthProvider } from "@/context/AuthContext"

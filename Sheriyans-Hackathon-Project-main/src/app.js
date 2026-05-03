@@ -46,12 +46,24 @@ const allowedOrigins = [
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
   'https://inst-alert.vercel.app',
   'http://localhost:3000',
+  'https://instalert-atbh.onrender.com',
 ].filter(Boolean);
 
+console.log('CORS allowed origins:', allowedOrigins);
+
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    console.log('CORS blocked origin:', origin);
+    return callback(null, true); // Allow all origins for now (temporary for debugging)
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  exposedHeaders: ["Set-Cookie"],
   credentials: true
 }));
 

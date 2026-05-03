@@ -106,6 +106,7 @@ const login = async (req, res) => {
 
         res.status(200).json({
             message: "User logged in successfully",
+            token: token, // Send token in response for cross-domain auth
             user: {
                 id: user._id,
                 username: user.username,
@@ -151,7 +152,7 @@ const register = async (req, res) => {
             sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
         });
 
-        res.status(201).json({ message: "User registered successfully", user });
+        res.status(201).json({ message: "User registered successfully", token: token, user });
 
     } catch (error) {
         console.error("Error registering user:", error);

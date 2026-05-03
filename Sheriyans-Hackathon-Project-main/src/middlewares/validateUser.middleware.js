@@ -6,7 +6,16 @@ import {config} from "dotenv";
 config();
 
 const validateUser = async (req, res, next) => {
-    const { token } = req.cookies;
+    // Check for token in cookies first, then Authorization header
+    let token = req.cookies?.token;
+    
+    // If no cookie, check Authorization header
+    if (!token && req.headers.authorization) {
+        const authHeader = req.headers.authorization;
+        if (authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7);
+        }
+    }
 
     if (!token) {
         return res.status(401).json({ error: "Unauthorized" });

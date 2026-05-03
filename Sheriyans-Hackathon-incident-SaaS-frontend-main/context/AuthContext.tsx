@@ -2,12 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import apiClient from "@/lib/api-client";
+import socket, { updateSocketAuth } from "@/lib/socket";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { User, Member, Organization } from "@/types";
 
 export interface AuthUser extends User {
-  id?: string; // Alias for _id, used by some components
+  id?: string;
 }
 
 export interface AuthOrganization extends Omit<Organization, "members"> {
@@ -79,6 +80,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       setUser(res.data.user);
       
+      if (res.data.token && typeof window !== "undefined") {
+        localStorage.setItem("auth_token", res.data.token);
+        updateSocketAuth(res.data.token);
+      }
+      
       try {
         const orgRes = await apiClient.get("/organization/get-my-org");
         setOrganization(orgRes.data.organization);
@@ -102,7 +108,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await apiClient.post("/auth/register", userData);
       setUser(res.data.user);
-      setOrganization(null); // New user won't have an org
+      
+      if (res.data.token && typeof window !== "undefined") {
+        localStorage.setItem("auth_token", res.data.token);
+        updateSocketAuth(res.data.token);
+      }
+      
+      setOrganization(null);
       toast.success("Account created successfully!");
       router.push("/dashboard");
     } catch (err: unknown) {
@@ -119,6 +131,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setOrganization(null);
       setUserRole("member");
+      
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        updateSocketAuth(null);
+      }
+      
       toast.success("Logged out successfully");
       router.push("/login");
     } catch (err) {
@@ -126,6 +144,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setOrganization(null);
       setUserRole("member");
+      
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        updateSocketAuth(null);
+      }
+      
       router.push("/login");
     }
   };
