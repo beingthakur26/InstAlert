@@ -38,11 +38,15 @@ app.use('/uploads', express.static(uploadsDir));
 
 app.use(morgan('dev'))
 
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map(u => u.trim())
-  : [
-    'https://instalert-atbh.onrender.com',
-  ];
+const allowedOrigins = [
+  ...(process.env.CLIENT_URL || process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(u => u.trim())
+    .filter(Boolean),
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  'https://inst-alert.vercel.app',
+  'http://localhost:3000',
+].filter(Boolean);
 
 app.use(cors({
   origin: allowedOrigins,

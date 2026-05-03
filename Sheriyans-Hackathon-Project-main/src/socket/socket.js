@@ -9,11 +9,15 @@ import DirectMessageModel from '../models/directMessage.model.js';
 import ChannelModel from '../models/channel.model.js';
 import aiService from '../services/ai.service.js';
 
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map(u => u.trim())
-  : [
-    'https://instalert-atbh.onrender.com',
-  ];
+const allowedOrigins = [
+  ...(process.env.CLIENT_URL || process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(u => u.trim())
+    .filter(Boolean),
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  'https://inst-alert.vercel.app',
+  'http://localhost:3000',
+].filter(Boolean);
 
 const server = http.createServer(app);
 const io = new Server(server, {
