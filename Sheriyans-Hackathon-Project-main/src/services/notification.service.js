@@ -96,7 +96,7 @@ const sendEmail = async (email, subject, body, eventType) => {
                                         <tr>
                                             <td style="color:#999;font-size:12px;">
                                                 This is an automated notification from InstaAlert.<br>
-                                                <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}" style="color:#37322F;text-decoration:underline;">View Dashboard</a>
+                                                <a href="${process.env.CLIENT_URL || 'https://instalert-atbh.onrender.com'}" style="color:#37322F;text-decoration:underline;">View Dashboard</a>
                                             </td>
                                         </tr>
                                     </table>

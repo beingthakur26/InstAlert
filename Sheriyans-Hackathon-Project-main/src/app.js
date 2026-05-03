@@ -41,11 +41,8 @@ app.use(morgan('dev'))
 const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map(u => u.trim())
   : [
-      "https://f1rr36mb-5173.inc1.devtunnels.ms",
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:3002'
-    ];
+    'https://instalert-atbh.onrender.com',
+  ];
 
 app.use(cors({
   origin: allowedOrigins,

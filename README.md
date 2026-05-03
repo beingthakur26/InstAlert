@@ -467,7 +467,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_email_app_password
-CLIENT_URL=http://localhost:3000,http://localhost:3002
+CLIENT_URL=https://instalert-atbh.onrender.com
 ```
 
 Start the backend development server:
@@ -504,7 +504,7 @@ The frontend will start on port 3000 (Next.js default).
 
 Open your browser and navigate to:
 ```
-http://localhost:3000
+https://instalert-atbh.onrender.com
 ```
 
 ### 4. Quick Start Checklist
